@@ -1,0 +1,478 @@
+﻿МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+
+
+
+
+
+
+
+
+ЗВІТ
+з дисципліни «Аналіз та рефакторінг коду» 
+з лабораторної роботи №2
+
+
+
+
+
+
+
+Виконала:	Перевірив:
+ст. гр. ПЗПІ-23-4	старший викладач каф. ПІ
+Туренко Ю.С.	Сокорчук І.П.
+
+
+
+
+
+
+
+
+
+
+
+ХАРКІВ 2025
+
+РОЗРОБКА БАЗИ ДАНИХ ДЛЯ СЕРВЕРНОЇ ЧАСТИНИ СИСТЕМИ ТА ПРИКЛАДНОГО ПРОГРАМНОГО ІНТЕРФЕЙСУ (API)
+
+1 ІСТОРІЯ ЗМІН
+
+№ДатаВерсія звітуОпис змін та виправлень115.110.1Створено розділ «Завдання»216.110.2Додано опис моделей і звязків, створено UML з описом основних прецедентів317.110.3Додано схему нормалізації та ER діаграму420.110.4Додано опис специфікації розробленого API та створено розділ «Висновок»521.110.5Додано матеріали у Додатки
+2 ЗАВДАННЯ
+     Завдання:
+* сформулювати архітектурні рішення для системи;
+* створити UML діаграму прецедентів;
+* створити ER діаграму даних (сутності, атрибути, зв'язки);
+* розробити базу даних (БД) на основі ER-діаграми та описати схему нормалізації (1NF, 2NF, 3NF);
+* створити діаграму структури БД (таблиці, зв'язки, ключі);
+* розробити функції роботи з БД (методи доступу, CRUD-операції);
+* розробити API для взаємодії;
+* створити специфікацію API (опис, формати, приклади);
+* створити програмну реалізацію API та функцій роботи з БД.
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+     Опис моделей і зв’язків у системі
+     У системі моніторингу акваріумів основними учасниками є користувач, його акваріуми, IoT-пристрої та команди керування обладнанням. Взаємодія між цими моделями створює потік даних і логіку роботи системи.
+     Користувач (User) – це основна сутність системи, яка має обліковий запис, входить у систему та керує власними акваріумами. Кожен користувач може мати один або кілька акваріумів. Користувач – «власник» усіх інших об’єктів, пов’язаних з його акваріумами.
+     Акваріум (Aquarium) є контейнером для пристроїв та даних. Він належить конкретному користувачеві і визначає конкретний фізичний об’єкт, до якого прив’язані IoT-пристрої. Акваріум – це середовище, у межах якого працює IoT-система. Усі показники та команди прив’язані до конкретного акваріума.
+     Пристрій (Device) – це фізичний модуль на основі ESP32, тобто IoT-пристрій. Він прив’язаний до одного акваріума, передає дані, отримує команди, підтримує взаємодію між фізичним середовищем та серверною частиною системи.
+     Запущена команда (ExecutedCommand) – це модель, що представляє команду, яку пристрій уже виконав. Вона містить результат виконання, час виконання та посилання на пристрій і тип команди.
+     Запланована команда (SchedulledCommand) – це команда, запланована на майбутній час. Вона містить параметри команди, час виконання, статус (очікує / виконано / скасовано) та прив’язку до пристрою й типу команди.
+     Дані сенсорів (SensorData) – це історичні показники, які надходять у систему з пристроїв. Можуть включати значення температури, pH та інші параметри води. SensorData є потоком даних, який накопичується з часом. Ці дані прив’язуються до пристрою та акваріума, дозволяючи будувати графіки, аналізувати стан акваріума та формувати повідомлення.
+     Повідомлення (Notification) – це автоматично сформовані попередження або інформаційні сповіщення. Система генерує їх у відповідь на критичні показники або події, наприклад, температура впала нижче норми або пристрій не відповідає. Повідомлення пов’язуються з користувачем та його акваріумом.
+     UML опис основних прецедентів використання серверної частини
+     Серверна частина системи забезпечує взаємодію користувача з веб-інтерфейсом, управління пристроями акваріуму, обробку команд, перегляд даних та адміністрування. Основні прецеденти включають:
+* аутентифікація та авторизація користувачів (через токени);
+* керування акваріумами (створення, редагування, перегляд);
+* керування пристроями акваріуму (прив’язка пристрою до акваріума, перегляд стану, оновлення статусу);
+* відправлення команд на IoT-модуль та обробка відповіді;
+* отримання та збереження сенсорних даних (температура, pH тощо);
+* формування історичних даних і статистики для акваріумів;
+* отримання сповіщень системи;
+* адміністративні функції: керування користувачами, обробка скарг, перегляд логів, отримання статистик тощо.
+     Ці прецеденти описують поведінку серверної частини на високому рівні (рис. Б.1) та визначають, які функції доступні звичайним користувачам, а які адміністратору.
+     Схема нормалізації даних (1NF, 2NF, 3NF)
+     Усі таблиці відповідають 1NF (першій нормальній формі), оскільки:
+* кожен атрибут має атомарне значення;
+* усі таблиці мають первинні ключі;
+* немає повторюваних груп атрибутів.
+     Усі таблиці мають прості первинні ключі, тому 2NF (друга нормальна форма) виконується автоматично. Додатково перевірено, що атрибути залежать тільки від первинного ключа, а не один від одного; дані не дублюються у межах однієї таблиці. Наприклад, у Device всі поля залежать лише від DeviceID, а не від DeviceType чи AquariumID.
+     Система відповідає 3NF (третій нормальній формі), тому що в усіх таблицях атрибути залежать виключно від первинного ключа і відсутні транзитивні залежності, наприклад у:
+* User: поля Username та Email є унікальними і повністю залежать від UserID, поле Role є незалежним значенням;
+* Aquarium: атрибути Name, Location, та IsActive залежать тільки від AquariumID, а UserID є зовнішнім ключем і не створює транзитивних залежностей;
+* Device: поля DeviceType (зберігається як enum для уникнення дублювання) та Status залежать виключно від DeviceID;
+* Notification: Message залежить від NotificationID.
+     Отже структура бази даних повністю відповідає 1NF, 2NF і 3NF; не має дублювання даних або транзитивних залежностей; таблиці логічно розділені та пов’язані зовнішніми ключами.
+     Відповідно була створена ER діаграма (рис. Б.2), яка відображає основні сутності системи та зв’язки між ними. У проекті було створено й підключено до серверної частини через EF Core база даних (рис. Б.3), де були додані ще дві сутності для збереження токенів, що необхідно для авторизації користувача.
+     Специфікація API
+     Далі наведені таблиці узагальнюють структуру API-ендпоінтів, формати запитів і відповідей, а також логіку команд та запитів (Таблиці 1-6).
+     
+     Таблиця 1 – Auth ендпоінти
+EndpointОписRequest BodyResponse BodyPOST /api/auth/registerРеєстрація користувачаemail, password, fullNameuserId, emailPOST /api/auth/loginАвторизаціяemail, passwordaccessToken, refreshTokenPOST /api/auth/refreshОновлення токенівrefreshTokenaccessToken, refreshTokenPOST /api/auth/logoutВихід (видалення refresh token)refreshTokensuccessPOST /api/auth/forgot-passwordЗапит на відновлення паролюemailsuccessPOST /api/auth/reset-passwordСкидання паролю за кодомemail, resetCode, newPasswordsuccessPOST /api/auth/change-passwordЗміна паролюoldPassword, newPasswordsuccess     
+     Таблиця 2 – Aquarium ендпоінти
+EndpointОписRequest BodyResponse BodyPOST /api/aquarium/createСтворення акваріумаname, description, volumeLitersid, name, description, volumeLitersPUT /api/aquarium/updateОновлення акваріумаname, description, volumeLiterssuccessDELETE /api/ aquarium/deleteВидаленняaquariumIdsuccessGET /api/ get-all-by-userВсі акваріуми користувача—список акваріумів     
+     Таблиця 3 – Device ендпоінти
+EndpointОписRequest BodyResponse BodyPOST /api/deviceСтворення пристроюaquariumId, name, descriptionid, aquariumId, name, descriptionPUT /api/device/{id}Оновленняname, descriptionsuccessPUT /api/device/{id}/statusЗміна статусуisOnsuccessDELETE /api/device/{id}Видалення—successGET /api/device/aquarium/{aqId}Пристрої акваріума—список пристроїв     
+     Таблиця 4 – Alarm rule ендпоінти
+EndpointОписRequest BodyResponse BodyPOST /api/alarm-ruleСтворення правилаaquariumId, parameter, minValue, maxValueid, aquariumIdPUT /api/alarm-rule/{id}Оновленняparameter, minValue, maxValuesuccessDELETE /api/alarm-rule/{id}Видалення—successGET /api/alarm-rule/aquarium/{aqId}Правила для акваріума—список правил     
+     Таблиця 5 – Scheduled command ендпоінти
+EndpointОписRequest BodyResponse BodyPOST /api/scheduled-commandСтворення розкладуdeviceId, commandType, startTime, repeatMode, intervalMinutes, isActiveidPUT /api/scheduled-command/{id}ОновленняcommandType, startTime, repeatMode, intervalMinutes, isActivesuccessDELETE /api/scheduled-command/{id}Видалення—successGET /api/scheduled-command/{id}Один розклад—всі поля ScheduledCommandGET /api/scheduled-command/deviceВсі розклади пристрою—список ScheduledCommand     
+     Таблиця 6 – Notification ендпоінти
+EndpointОписRequest BodyResponse BodyGET /api/notificationВсі повідомлення користувача—список повідомленьPUT /api/notification/{id}/readПозначити прочитаним—success     
+     Розглянемо для прикладу реалізацію реєстрації користувача і видалення приладу. Для реєстрації користувача реалізовано:
+* ендпоінт «POST/auth/register» (код В.1) отримує дані нового користувача (email, пароль, ім’я), викликається команда RegisterCommand (код В.2), яка повертає результат створення користувача (успішно / помилка);
+* репозиторій – абстракція IUserRepository (код В.3) та сама реалізація UserRepository (код В.4) з методами отримання користувача за email, створення нового користувача, перевірки наявності користувача тощо;
+* валідатор RegisterCommandValidator (код В.5) перевіряє коректність email і пароля, чи користувач з таким email вже існує (AlreadyExists);
+* хендлер RegisterCommandHandler (код В.6), який звертається до репозиторію, створює нового користувача, логує успішне створення та повертає результат (у даному випадку згенеровані токени).
+     Для видалення певного приладу:
+* ендпоінт «DELETE/devices/{deviceId}» (код В.7)  приймає ідентифікатор пристрою, викликається команда DeleteDeviceCommand (код В.8), яка отримує також Id авторизованого користувача і повертає успіх або повідомлення про помилку;
+* репозиторій – абстракція IDeviceRepository (код В.9) та сама реалізація DeviceRepository (код В.10) з методами отримання пристрою за Id, перевірки належності пристрою користувачу, створення, оновлення і видалення;
+* валідатор DeleteDeviceCommandValidator (код В.11) перевіряєчи існує прилад з отриманим Id та чи належить пристрій користувачу;
+* хендлер DeleteDeviceCommandHandler (код В.12), який видаляє пристрій, логує операцію видалення та повертає результат (успішно чи помилка).
+     Отже, в роботі була реалізована повна логіка взаємодії серверної частини з базою даних, включаючи збереження, обробку та отримання даних. Також розроблено та організовано механізми взаємодії серверу з клієнтами через REST API. Усі компоненти структуровано відповідно до принципів ООП і SOLID, що підвищує підтримуваність і масштабованість системи. Реалізовано чіткий поділ відповідальностей між моделями, сервісами та контролерами для надійності та прозорості роботи.
+
+4 ВИСНОВОК
+     У результаті виконання лабораторної роботи була успішно досягнута мета з освоєння повного циклу розробки серверної частини програмної системи. Набуто практичних навичок у проектуванні UML ER діаграм, розробці нормалізованої бази даних та програмній реалізації API з використанням ORM. 
+ДОДАТОК А
+Відеозапис
+Відеозапис презентації результатів лабораторної роботи:  https://youtu.be/aScpfccku3M .
+Хронологічний опис відеозапису:
+* 00:00 – Вступ 
+* 00:25 – Розгляд ER діаграма 
+* 03:07 – Розгляд діаграми структури БД 
+* 03:26 – Пояснення реалізації серверної частини 
+* 05:32 – Тестування реєстрації 
+* 06:40 – Тестування команд для акваріумів 
+* 08:23 – Тестування команд для приладів 
+* 09:36 – Тестування логіну
+
+ДОДАТОК Б
+Графічні матеріали
+
+Рисунок Б.1 – UML діаграма для серверної частини системи
+
+
+Рисунок Б.2 – ER діаграма
+
+
+Рисунок Б.3 – Діаграма структури БД
+
+
+ДОДАТОК В
+Програмний код
+В.1 Register ендпоінт в AuthController
+24 [HttpPost("register")]
+25 public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+26 {
+27     var command = new RegisterCommand(
+28         request.UserName,
+29         request.Email,
+30         request.Password
+31     );
+32 
+33     var result = await _mediator.Send(command);
+34     return Ok(result);
+35 }
+
+В.2 Команда RegisterCommand
+1 using Application.DTOs.Auth;
+2 using MediatR;
+3 
+4 namespace Application.Auth.Commands.Register;
+5 
+6 public record RegisterCommand(string UserName, string Email, string Password) : IRequest<AuthResponseDto>;
+
+В.3 Абстракція репозиторію IUserRepository
+1 using Domain.Models;
+2 
+3 namespace Application.Abstractions;
+4 
+5 public interface IUserRepository
+6 {
+7     Task<User?> GetByEmailAsync(string email, CancellationToken ct);
+8     Task<User?> GetByIdAsync(long id, CancellationToken ct);
+9     Task AddAsync(User user, CancellationToken ct);
+10    Task UpdateAsync(User user, CancellationToken ct);
+11    Task<bool> ExistsByIdAsync(long userId, CancellationToken ct);
+12 }
+
+В.4 Реалізація репозиторію UserRepository
+1 using Application.Abstractions;
+2 using Domain.Models;
+3 using Persistence.Application;
+4 using Microsoft.EntityFrameworkCore;
+5 
+6 namespace Persistence.Repositories;
+7 
+8 public class UserRepository : IUserRepository
+9 {
+10    private readonly CleanAriumDbContext _db;
+11
+12    public UserRepository(CleanAriumDbContext db)
+13    {
+14        _db = db;
+15    }
+16
+17    public Task<User?> GetByEmailAsync(string email, CancellationToken ct) =>
+18        _db.Users.FirstOrDefaultAsync(x => x.Email == email, ct);
+19
+20    public Task<User?> GetByIdAsync(long id, CancellationToken ct) =>
+21        _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
+22
+23    public async Task AddAsync(User user, CancellationToken ct)
+24    {
+25        _db.Users.Add(user);
+26        await _db.SaveChangesAsync(ct);
+27    }
+28
+29    public async Task UpdateAsync(User user, CancellationToken ct)
+30    {
+31        _db.Users.Update(user);
+32        await _db.SaveChangesAsync(ct);
+33    }
+34
+35    public async Task<bool> ExistsByIdAsync(long userId, CancellationToken ct)
+36        => await _db.Users.AnyAsync(x => x.Id == userId, ct);
+37 }
+
+В.5 Валідатор команди RegisterCommand
+1 using Application.Abstractions;
+2 using FluentValidation;
+3 
+4 namespace Application.Auth.Commands.Register;
+5 
+6 public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
+7 {
+8     private readonly IUserRepository _userRepo;
+9 
+10    public RegisterCommandValidator(IUserRepository userRepo)
+11    {
+12        _userRepo = userRepo;
+13
+14        RuleFor(x => x.UserName).NotEmpty().MinimumLength(2).MaximumLength(30)
+15            .WithMessage("User name is required for registration. It should be at least 2 and maximum 30 symbols.");
+16
+17        RuleFor(x => x.Email).NotEmpty().EmailAddress()
+18            .WithMessage("Email is required for registration.");
+19
+20        RuleFor(x => x.Password).NotEmpty().MinimumLength(8);
+21
+22        RuleFor(x => x)
+23            .MustAsync(AlreadyExists).WithMessage("User with such email already exists.");
+24    }
+25
+26    private async Task<bool> AlreadyExists(RegisterCommand cmd, CancellationToken ct)
+27    {
+28        var existing = await _userRepo.GetByEmailAsync(cmd.Email, ct);
+29        return existing == null;
+30    }
+31 }
+
+В.6 Хендлер команди RegisterCommand
+1 using Application.Abstractions;
+2 using Application.DTOs.Auth;
+3 using Domain.Enums;
+4 using Domain.Models;
+5 using MediatR;
+6 using Microsoft.Extensions.Logging;
+7 
+8 namespace Application.Auth.Commands.Register;
+9 
+10 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponseDto>
+11 {
+12    private readonly IUserRepository _repo;
+13    private readonly IPasswordHasher _hasher;
+14    private readonly IJwtTokenService _jwt;
+15    private readonly IRefreshTokenRepository _refresh;
+16    private readonly ILogger<RegisterCommandHandler> _logger;
+17
+18    public RegisterCommandHandler(IUserRepository repo, 
+19        IPasswordHasher hasher, 
+20        IJwtTokenService jwt, 
+21        IRefreshTokenRepository refresh,
+22        ILogger<RegisterCommandHandler> logger)
+23    {
+24        _repo = repo;
+25        _hasher = hasher;
+26        _jwt = jwt;
+27        _refresh = refresh;
+28        _logger = logger;
+29    }
+30
+31    public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken ct)
+32    {
+33        var existing = await _repo.GetByEmailAsync(request.Email, ct);
+34        var salt = _hasher.GenerateSalt();
+35        var hash = _hasher.HashPassword(request.Password, salt);
+36
+37        var user = new User
+38        {
+39            UserName = request.UserName,
+40            Email = request.Email,
+41            PasswordHash = hash,
+42            Salt = salt,
+43            Role = UserRole.User,
+44            IsBlocked = false
+45        };
+46
+47        await _repo.AddAsync(user, ct);
+48
+49        var accessToken = _jwt.GenerateToken(user);
+50        var refreshToken = _jwt.GenerateRefreshToken();
+51        refreshToken.UserId = user.Id;
+52        await _refresh.AddAsync(refreshToken);
+53
+54        _logger.LogInformation("Successful registration for user: {Id} ", user.Id);
+55
+56        return new AuthResponseDto { 
+57            AccessToken = accessToken,
+58            RefreshToken = refreshToken.Token
+59        };
+60    }
+61 }
+
+В.7 Delete ендпоінт в DeviceController
+59 [HttpDelete("delete/{deviceId:long}")]
+60 public async Task<IActionResult> Delete([FromRoute] long deviceId, CancellationToken ct)
+61 {
+62     var userId = _userService.GetApplicationUserId()!.Value;
+63 
+64     var command = new DeleteDeviceCommand(
+65         UserId: userId,
+66         DeviceId: deviceId
+67     );
+68 
+69     await _mediator.Send(command, ct);
+70 
+71     return Ok();
+72 }
+
+В.8 Команда DeleteDeviceCommand
+1 using MediatR;
+2 
+3 namespace Application.Devices.Commands.Delete;
+4 
+5 public record DeleteDeviceCommand(long UserId, long DeviceId) : IRequest;
+
+В.9 Абстракція репозиторію IDeviceRepository
+1 using Domain.Models;
+2 
+3 namespace Application.Abstractions;
+4 
+5 public interface IDeviceRepository
+6 {
+7     Task<Device?> GetByIdAsync(long id);
+8     Task<List<Device>> GetByAquariumIdAsync(long aquariumId);
+9     Task AddAsync(Device device);
+10    Task UpdateAsync(Device device);
+11    Task DeleteAsync(Device device);
+12    Task<bool> ExistsByIdAsync(long deviceId, CancellationToken ct);
+13    Task<bool> UserOwnsDeviceAsync(long userId, long deviceId, CancellationToken ct);
+14 }
+
+В.10 Реалізація репозиторію DeviceRepository
+1 using Application.Abstractions;
+2 using Domain.Models;
+3 using Persistence.Application;
+4 using Microsoft.EntityFrameworkCore;
+5 
+6 namespace Persistence.Repositories;
+7 
+8 public class DeviceRepository : IDeviceRepository
+9 {
+10    private readonly CleanAriumDbContext _db;
+11
+12    public DeviceRepository(CleanAriumDbContext db)
+13    {
+14        _db = db;
+15    }
+16
+17    public async Task<Device?> GetByIdAsync(long id)
+18        => await _db.Devices.FirstOrDefaultAsync(x => x.Id == id);
+19
+20    public async Task<List<Device>> GetByAquariumIdAsync(long aquariumId)
+21        => await _db.Devices.Where(x => x.AquariumId == aquariumId).ToListAsync();
+22
+23    public async Task AddAsync(Device device)
+24    {
+25        _db.Devices.Add(device);
+26        await _db.SaveChangesAsync();
+27    }
+28
+29    public async Task UpdateAsync(Device device)
+30    {
+31        _db.Devices.Update(device);
+32        await _db.SaveChangesAsync();
+33    }
+34
+35    public async Task DeleteAsync(Device device)
+36    {
+37        _db.Devices.Remove(device);
+38        await _db.SaveChangesAsync();
+39    }
+40
+41    public async Task<bool> ExistsByIdAsync(long deviceId, CancellationToken ct)
+42        => await _db.Devices.AnyAsync(x => x.Id == deviceId, ct);
+43
+44    public async Task<bool> UserOwnsDeviceAsync(long userId, long deviceId, CancellationToken ct)
+45    {
+46        return await _db.Devices
+47            .AnyAsync(x => x.Id == deviceId && x.Aquarium.UserId == userId);
+48    }
+49 }
+
+В.11 Валідатор команди DeleteDeviceCommand
+1 using Application.Abstractions;
+2 using FluentValidation;
+3 
+4 namespace Application.Devices.Commands.Delete;
+5 
+6 public class DeleteDeviceCommandValidator : AbstractValidator<DeleteDeviceCommand>
+7 {
+8     private readonly IDeviceRepository _repo;
+9     private readonly IUserRepository _userRepo;
+10
+11    public DeleteDeviceCommandValidator(IDeviceRepository repo, IUserRepository userRepo)
+12    {
+13        _repo = repo;
+14        _userRepo = userRepo;
+15
+16        RuleFor(x => x.DeviceId).NotEmpty().GreaterThan(0)
+17            .WithMessage("Device id is required to delete device.");
+18
+19        RuleFor(x => x)
+20            .MustAsync(UserExists).WithMessage("User not found.")
+21            .MustAsync(DeviceExists).WithMessage("Device not found.")
+22            .MustAsync(UserOwnsDevice).WithMessage("User doesn't own this device.");
+23    }
+24
+25    private async Task<bool> UserExists(DeleteDeviceCommand cmd, CancellationToken ct)
+26    {
+27        return await _userRepo.ExistsByIdAsync(cmd.UserId, ct);
+28    }
+29
+30    private async Task<bool> DeviceExists(DeleteDeviceCommand cmd, CancellationToken ct)
+31    {
+32        return await _repo.ExistsByIdAsync(cmd.DeviceId, ct);
+33    }
+34
+35    private async Task<bool> UserOwnsDevice(DeleteDeviceCommand cmd, CancellationToken ct)
+36    {
+37        return await _repo.UserOwnsDeviceAsync(cmd.UserId, cmd.DeviceId, ct);
+38    }
+39 }
+
+В.12 Хендлер команди DeleteDeviceCommand
+1 using Application.Abstractions;
+2 using MediatR;
+3 using Microsoft.Extensions.Logging;
+4 
+5 namespace Application.Devices.Commands.Delete;
+6 
+7 public class DeleteDeviceCommandHandler : IRequestHandler<DeleteDeviceCommand>
+8 {
+9     private readonly IDeviceRepository _repo;
+10    private readonly ILogger<DeleteDeviceCommandHandler> _logger;
+11
+12    public DeleteDeviceCommandHandler(IDeviceRepository repo, ILogger<DeleteDeviceCommandHandler> logger)
+13    {
+14        _repo = repo;
+15        _logger = logger;
+16    }
+17
+18    public async Task Handle(DeleteDeviceCommand request, CancellationToken ct)
+19    {
+20        var device = await _repo.GetByIdAsync(request.DeviceId);
+21
+22        await _repo.DeleteAsync(device);
+23
+24        _logger.LogWarning("Device {Id} deleted", request.DeviceId);
+25    }
+26 }
+
+
+
+

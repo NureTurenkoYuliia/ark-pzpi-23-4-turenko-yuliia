@@ -1,0 +1,23 @@
+﻿using Domain.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Persistence.Application.Configurations;
+
+public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<PasswordResetToken>
+{
+    public void Configure(EntityTypeBuilder<PasswordResetToken> builder)
+    {
+        builder.HasKey(x => x.Id);
+
+        builder.HasOne(x => x.User)
+               .WithMany()
+               .HasForeignKey(x => x.UserId);
+
+        builder.Property(x => x.Token)
+               .IsRequired();
+
+        builder.Property(x => x.ExpiresAt)
+               .IsRequired();
+    }
+}
