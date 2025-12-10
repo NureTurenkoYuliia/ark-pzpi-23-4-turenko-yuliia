@@ -1,0 +1,539 @@
+﻿МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+
+
+
+
+
+
+
+
+ЗВІТ
+з дисципліни «Аналіз та рефакторінг коду» 
+з лабораторної роботи №3
+
+
+
+
+
+
+
+Виконала:	Перевірив:
+ст. гр. ПЗПІ-23-4	старший викладач каф. ПІ
+Туренко Ю.С.	Сокорчук І.П.
+
+
+
+
+
+
+
+
+
+
+
+ХАРКІВ 2025
+
+РОЗРОБКА БІЗНЕС ЛОГІКИ ТА ФУНКЦІЙ АДМІНІСТРУВАННЯ СЕРВЕРНОЇ ЧАСТИНИ СИСТЕМИ
+
+1 ІСТОРІЯ ЗМІН
+
+№ДатаВерсія звітуОпис змін та виправлень103.110.1Створено розділ «Завдання»205.110.2Додано опис архітектурних рішень та вибір технологій308.110.3Додано опис реалізації бізнес логіки та функцій адміністрування409.110.4Додано UML діаграми та опис до них, створено розділ «Висновок»510.110.5Додано матеріали у Додатки А та В
+2 ЗАВДАННЯ
+     Завдання:
+* розробити бізнес логіку серверної частини програмної системи;
+* розробити функції адміністрування серверної частини програмної системи;
+* створити програмну реалізацію бізнес логіки та функцій адміністрування серверної частини;
+* перевірити роботу серверної частини системи.
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+     Опис архітектурних рішень та вибір технологій
+     Серверна частина системи побудована за принципами чистої архітектури з чітким розділенням відповідальностей між контролерами, сервісами бізнес-логіки, командами, запитами та рівнем доступу до даних. Було використано ASP.NET Core, Entity Framework Core для роботи з базою даних та Serilog для централізованого логування. У системі використовується файлове логування, яке дозволяє: фіксувати дії користувачів, аналізувати активність по днях, використовувати лог-файли як джерело даних для адміністрування.
+     У серверній частині системи застосовано підхід CQRS (Command Query Responsibility Segregation), який передбачає чітке розділення операцій читання та модифікації даних. Запити (Queries) використовуються для отримання даних і аналітики без зміни стану системи, тоді як команди (Commands) відповідають за виконання дiй. Це дозволяє зменшити зв’язність компонентів, спростити розширення бізнес-логіки та підвищити тестованість системи. А дотримання чистої архітектури дозволяє ізолювати бізнес-логіку від деталей зберігання даних, спрощує розширення функціоналу та підтримку системи.
+     Опис реалізації бізнес-логіки серверної частини
+     Бізнес-логіка системи реалізована у вигляді сервісів, які відповідають за виконання ключових процесів. До них належать:
+* керування акваріумами, приладами та датчиками;
+* обробка AlarmRule з перевіркою значень сенсорних даних;
+* виконання та аналіз ScheduledCommand і ExecutedCommand;
+* створення сповіщень (Notifications) при виникненні аварійних ситуацій.
+     AlarmRuleAnalyticsService (код В.1) аналізує історичні значення датчиків (SensorData) і частоту спрацювань попереджень (AlarmRule), обчислюючи тренд наближення до порогів. На основі цього формується прогноз майбутніх Alarm та рекомендації щодо коригування порогових значень. Логіка аналізу:
+* для кожного AlarmRule беруться значення датчика за період;
+* рахується кількість спрацьовувань, середнє значення датчика, мінімум / максимум;
+* аналізується тренд: trend = average(last N values) - average(previous N values).
+     Якщо тренд стабільно рухається в бік порогу (наближення до Threshold) або частота Alarm зростає, тоді прогнозується можливе майбутнє спрацьовування. Можливі рекомендації:
+* змінити Threshold;
+* перевірити стан пристрою;
+* тимчасово деактивувати правило.
+     CommandAlarmAnalyticsService (код В.2) аналізує часову близькість між виконаними командами (ExecutedCommands) та появою Alarm-сповіщень (Notifications з AlarmRuleId) на одному приладі, дозволяє виявляти потенційні проблеми у налаштуваннях пристроїв та формувати рекомендації. Логіка аналізу (кореляція):
+* для кожної виконаної команди шукаються Alarm-сповіщення по тому самому пристрою у часовому вікні Δt;
+* рахується: correlationRate = alarmsAfterCommand / executedCommands.
+     Якщо після команди протягом короткого інтервалу зʼявляється Alarm – це фіксується як потенційна кореляція для рекомендацій. Рекомендація:
+* деактивувати ScheduledCommand;
+* або деактивувати AlarmRule;
+* або змінити інтервали чи пороги.
+     UserActivityService (код В.3) надає моніторинг активності користування системою. Сервіс аналізує log-файли, а саме записи з маркером «USER-ACTION». Дає змогу спрогнозувати наступні наслідки: якщо активність стабільно падає, тоді ризик неактивності; якщо різко зростає, тоді підвищене навантаження або тестування.
+     Для обробки аварійних умов реалізовано AlarmRuleProcessor, який аналізує вхідні дані сенсорів та автоматично створює сповіщення при порушенні заданих правил. 
+     Також реалізована функціональність імпорту та експорту. Під час імпорту даних з CSV або JSON виконується парсинг, валідація та перевірка системних обмежень (SystemSettings). Експорт, наприклад для акваріумів з їх дивайсами у CSV, JSON та PDF, дозволяє отримувати структуровані дані у зручному форматі для резервного копіювання або подальшого аналізу. Такий підхід забезпечує консистентність даних і централізований контроль бізнес-правил.
+     Реалізація функцій адміністрування
+     Функції адміністрування реалізовані окремими командами або сервісами та захищеними API-ендпоінтами з використанням ролей і policy-based авторизації (код В.4). Адміністратор має можливість:
+* керувати системними параметрами (ліміти на кількість акваріумів, приладів, правил та запланованих  команд);
+* переглядати та аналізувати системні логи;
+* отримувати статистику активності користувачів;
+* виконувати управління ролями (призначення та зняття ролі модератора);
+* деактивувати AlarmRule та ScheduledCommand у разі некоректної роботи.
+     Для модераторів реалізовано обмежений функціонал контролю – зокрема перегляд логів і деактивацію проблемних правил та команд на основі аналітики.
+     UML-діаграми
+     Діаграма діяльності 1 (рис. Б.1) демонструє процеси на серверній частині: обробка даних сенсора, перевірка активних правил попередження та автоматичне створення сповіщення, яке отримує користувач, у разі порушення порогових значень.
+     Діаграма діяльності 2 (рис. Б.2) відображає повний процес імпорту акваріумів разом з приладами з певного файлу. На етапі виконання враховуються системні обмеження (SystemSettings), такі як максимальна кількість акваріумів у користувача і приладів на один акваріум. У разі порушення правил під час імпорту дані тільки частково додаються. Успішно валідовані дані зберігаються в базі даних.
+     Діаграма діяльності 3 (рис. Б.3) демонструє бізнес-процес аналізу адміністратором по отриманню результатів кореляції між командами та попередженнями, за якими може прийняти рішення про деактивацію проблемних правил або команд. Усі дії фіксуються в системі логування.
+     Діаграма взаємодії 1 (рис. Б.4) ілюструє процес деактивації правила або команди адміністратором/модератором. Запит проходить через контролер і middleware авторизації, після чого обробляється у вигляді команди згідно з CQRS-підходом. Команда валідується, а хендлер змінює стан відповідної сутності в базі даних. Результат операції повертається користувачу у вигляді HTTP-відповіді.
+     Діаграма взаємодії 2 (рис. Б.5) демонструє сценарій отримання аналітики кореляції між виконаними командами та спрацюваннями AlarmRule. Адміністратор ініціює запит, який через контролер передається до сервісу CommandAlarmAnalyticsService. Сервіс агрегує дані з ExecutedCommands та Notifications і формує аналітичний результат із можливими рекомендаціями. Результат повертається у вигляді зведеної статистики.
+
+4 ВИСНОВОК
+     Отже, в роботі було реалізовано бізнес-логіку серверної частини системи автоматизованого догляду за акваріумами з підтримкою імпорту/експорту даних, аналітики та адміністрування. Реалізовано обробку правил попереджень і команд, їх аналіз та кореляцію, систему сповіщень і базову аналітику активності користувачів. Окрему увагу приділено функціям адміністрування: керуванню системними параметрами, ролями, доступом до логів та аналітичним рекомендаціям. 
+     
+ДОДАТОК А
+Відеозапис
+Відеозапис презентації результатів лабораторної роботи:  https://youtu.be/5IVJ2mBBgY0 .
+Хронологічний опис відеозапису:
+* 00:00 – Вступ 
+* 00:21 – Функції User та ролі 
+* 01:33 – Імпорт та експорт даних 
+* 03:26 – Пояснення реалізації серверної частини 
+* 03:55 – Логи та аналіз активності користування 
+* 05:52 – Системні параметри 
+* 06:36 – Аналіз виконаних команд і попереджень з рекомендацією 
+* 09:14 – Прогнозування попереджень на основі отриманих даних з приладу 
+* 09:36 – Повідомлення 
+
+ДОДАТОК Б
+Графічні матеріали
+
+     Рисунок Б.1 – UML діаграма діяльності 
+     
+
+     Рисунок Б.2 – UML діаграма діяльності
+
+
+     Рисунок Б.3 – UML діаграма діяльності 
+     
+     
+     Рисунок Б.4 – UML діаграма взаємодії
+     
+     
+     Рисунок Б.5 – UML діаграма взаємодії
+     
+
+
+
+
+
+
+ДОДАТОК В
+Програмний код
+В.1 AlarmRuleAnalyticsService
+7 public class AlarmRuleAnalyticsService : IAlarmRuleAnalyticsService
+8 {
+9     private readonly ISensorDataRepository _sensorRepo;
+10 
+11     public AlarmRuleAnalyticsService(ISensorDataRepository sensorRepo)
+12     {
+13         _sensorRepo = sensorRepo;
+14     }
+15 
+16     public async Task<AlarmRuleAnalysisDto> AnalyzeAsync(AlarmRule rule, DateTime from, DateTime to)
+17     {
+18         var data = await _sensorRepo.GetByDeviceAsync(rule.DeviceId, from, to);
+19 
+20         if (data.Count < 2)
+21             return Empty(rule.Id);
+22 
+23         var ordered = data.OrderBy(x => x.DateTime).ToList();
+24 
+25         var avg = ordered.Average(x => x.Value);
+26 
+27         var first = ordered.First();
+28         var last = ordered.Last();
+29 
+30         var days = Math.Max(
+31             (last.DateTime - first.DateTime).TotalDays,
+32             1);
+33 
+34         var trendPerDay = (last.Value - first.Value) / days;
+35 
+36         int estimate = int.MaxValue;
+37         if (Math.Abs(trendPerDay) > 0.0001)
+38         {
+39             estimate = (int)((rule.Threshold - last.Value) / trendPerDay);
+40             if (estimate < 0) estimate = 0;
+41         }
+42 
+43         return new AlarmRuleAnalysisDto
+44         {
+45             AlarmRuleId = rule.Id,
+46             AverageValue = Math.Round(avg, 2),
+47             TrendPerDay = Math.Round(trendPerDay, 3),
+48             EstimatedDaysToTrigger = estimate,
+49             Recommendation = BuildRecommendation(rule, trendPerDay, estimate)
+50         };
+51     }
+52 
+53     private static AlarmRuleAnalysisDto Empty(long ruleId) => 
+54         new()
+55         {
+56              AlarmRuleId = ruleId,
+57              Recommendation = "Insufficient data for analysis"
+58         };
+59 
+60     private static string BuildRecommendation(AlarmRule rule, double trend, int days)
+61     {
+62         if (days <= 1)
+63             return "High risk: Alarm likely to trigger soon. Consider adjusting threshold or device behavior.";
+64 
+65         if (trend > 0)
+66             return "Value is increasing. Monitor device closely.";
+67 
+68         if (trend < 0)
+69             return "Value is decreasing. Alarm risk is lowering.";
+70 
+71         return "Stable values. No action needed.";
+72     }
+73 }
+
+В.2 CommandAlarmAnalyticsService
+6 public class CommandAlarmAnalyticsService : ICommandAlarmAnalyticsService
+7 {
+8     private readonly IExecutedCommandRepository _commandsRepo;
+9     private readonly INotificationRepository _notificationsRepo;
+10 
+11     public CommandAlarmAnalyticsService(
+12         IExecutedCommandRepository commandsRepo,
+13         INotificationRepository notificationsRepo)
+14     {
+15         _commandsRepo = commandsRepo;
+16         _notificationsRepo = notificationsRepo;
+17     }
+18 
+19     public async Task<List<CommandAlarmCorrelationDto>> AnalyzeAsync(DateTime from, DateTime to, TimeSpan maxDelay)
+20     {
+21         var commands = await _commandsRepo.GetByPeriodAsync(from, to);
+22 
+23         var alarms = await _notificationsRepo.GetAlarmNotificationsByPeriodAsync(from, to);
+24 
+25         var result = new List<CommandAlarmCorrelationDto>();
+26 
+27         foreach (var deviceGroup in commands.GroupBy(c => c.DeviceId))
+28         {
+29             foreach (var cmdGroup in deviceGroup.GroupBy(c => c.CommandType))
+30             {
+31                 var relatedAlarms = alarms
+32                     .Where(a => a.AlarmRuleId != null)
+33                     .ToList();
+34 
+35                 var delays = new List<TimeSpan>();
+36 
+37                 foreach (var cmd in cmdGroup)
+38                 {
+39                     var alarm = relatedAlarms
+40                         .Where(a => a.CreatedAt >= cmd.IssuedAt && a.CreatedAt <= cmd.IssuedAt + maxDelay)
+41                         .OrderBy(a => a.CreatedAt)
+42                         .FirstOrDefault();
+43 
+44                     if (alarm != null)
+45                         delays.Add(alarm.CreatedAt - cmd.IssuedAt);
+46                 }
+47 
+48                 if (!delays.Any())
+49                     continue;
+50 
+51                 result.Add(new CommandAlarmCorrelationDto
+52                 {
+53                     DeviceId = deviceGroup.Key,
+54                     CommandType = cmdGroup.Key,
+55                     CommandCount = cmdGroup.Count(),
+56                     AlarmCount = delays.Count,
+57                     AvgDelayBetweenCommandAndAlarm =
+58                         TimeSpan.FromSeconds(delays.Average(d => d.TotalSeconds)),
+59                     Recommendation = BuildRecommendation(cmdGroup.Count(), delays.Count)
+60                 });
+61             }
+62         }
+63 
+64         return result;
+65     }
+66 
+67     private static string BuildRecommendation(int commandCount, int alarmCount)
+68     {
+69         var ratio = (double)alarmCount / commandCount;
+70 
+71         if (ratio > 0.7)
+72             return "High correlation: consider disabling command or adjusting alarm rule thresholds";
+73 
+74         if (ratio > 0.4)
+75             return "Moderate correlation: review command timing or alarm rule sensitivity";
+76 
+77         return "Low correlation: no action required";
+78     }
+79 }
+
+В.3 UserActivityService
+8 public class UserActivityService : IUserActivityService
+9 {
+10     private readonly ILogger<UserActivityService> _logger;
+11 
+12     public UserActivityService(ILogger<UserActivityService> logger)
+13     {
+14         _logger = logger;
+15     }
+16 
+17     public async Task<List<UserActivityDailyDto>> GetDailyStatsAsync(int days)
+18     {
+19         var logsDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+20 
+21         if (!Directory.Exists(logsDir))
+22             return new List<UserActivityDailyDto>();
+23 
+24         var latestLog = Directory.GetFiles(logsDir, "app*.log")
+25             .OrderByDescending(File.GetLastWriteTime)
+26             .FirstOrDefault();
+27 
+28         if (latestLog == null)
+29             return new List<UserActivityDailyDto>();
+30 
+31         var result = new Dictionary<DateOnly, int>();
+32 
+33         using var stream = new FileStream(
+34             latestLog,
+35             FileMode.Open,
+36             FileAccess.Read,
+37             FileShare.ReadWrite
+38         );
+39 
+40         using var reader = new StreamReader(stream, Encoding.UTF8);
+41 
+42         string? line;
+43         while ((line = await reader.ReadLineAsync()) != null)
+44         {
+45             if (!line.Contains("USER_ACTION"))
+46                 continue;
+47 
+48             if (DateTime.TryParse(line[..19], out var date))
+49             {
+50                 var day = DateOnly.FromDateTime(date);
+51                 result.TryAdd(day, 0);
+52                 result[day]++;
+53             }
+54         }
+55 
+56         return result
+57             .OrderByDescending(x => x.Key)
+58             .Take(days)
+59             .Select(x => new UserActivityDailyDto
+60             {
+61                 Date = x.Key,
+62                 ActionsCount = x.Value
+63             })
+64             .ToList();
+65     }
+66 }
+
+В.4 Контролер адміна та модератора 
+15 [ApiController]
+16 [Route("api/[controller]")]
+17 public class AdminController : ControllerBase
+18 {
+19 
+20     private readonly IMediator _mediator;
+21     private readonly IUserActivityService _activityService;
+22     private readonly ICommandAlarmAnalyticsService _analyticsService;
+23 
+24     public AdminController(
+25         IMediator mediator, 
+26         IUserActivityService activityService,
+27         ICommandAlarmAnalyticsService analyticsService)
+28     {
+29         _mediator = mediator;
+30         _activityService = activityService;
+31         _analyticsService = analyticsService;
+32     }
+33 
+34     /// <summary>
+35     /// Retrieves the latest application log file content.
+36     /// </summary>
+37     /// <remarks>
+38     /// Access restricted to users with 'Admin' or 'Moderator' roles.
+39     /// Searches for the most recently written file matching "app*.log" in the 'logs' directory.
+40     /// </remarks>
+41     /// <returns>
+42     /// A File response containing the log content as "text/plain", or 404 Not Found if the directory or file is missing.
+43     /// </returns>
+44     [Authorize(Roles = "Admin,Moderator")]
+45     [HttpGet("logs")]
+46     public IActionResult GetLogs()
+47     {
+48         var logsDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+49 
+50         if (!Directory.Exists(logsDir))
+51             return NotFound("Logs directory not found");
+52 
+53         var latestLog = Directory.GetFiles(logsDir, "app*.log")
+54             .OrderByDescending(System.IO.File.GetLastWriteTime)
+55             .FirstOrDefault();
+56 
+57         if (latestLog == null)
+58             return NotFound("Log file not found");
+59 
+60         using var stream = new FileStream(
+61             latestLog,
+62             FileMode.Open,
+63             FileAccess.Read,
+64             FileShare.ReadWrite
+65         );
+66 
+67         using var reader = new StreamReader(stream, Encoding.UTF8);
+68         var content = reader.ReadToEnd();
+69 
+70         var fileName = Path.GetFileName(latestLog);
+71 
+72         return File(Encoding.UTF8.GetBytes(content), "text/plain", fileName);
+73     }
+74 
+75     /// <summary>
+76     /// Assigns the 'Moderator' role to a specified user.
+77     /// </summary>
+78     /// <remarks>
+79     /// Access restricted to users with the 'Admin' role.
+80     /// </remarks>
+81     /// <param name="userId">The ID of the user to be promoted to Moderator.</param>
+82     /// <returns>
+83     /// A 200 OK response on successful role assignment.
+84     /// </returns>
+85     [Authorize(Roles = "Admin")]
+86     [HttpPost("{userId}/make-moderator")]
+87     public async Task<IActionResult> MakeModerator(long userId)
+88     {
+89         await _mediator.Send(new AssignModeratorCommand(userId));
+90         return Ok("User promoted to Moderator");
+91     }
+92 
+93     /// <summary>
+94     /// Removes the 'Moderator' role from a specified user.
+95     /// </summary>
+96     /// <remarks>
+97     /// Access restricted to users with the 'Admin' role.
+98     /// </remarks>
+99     /// <param name="userId">The ID of the user whose Moderator role should be revoked.</param>
+100     /// <returns>
+101     /// A 200 OK response on successful role removal.
+102     /// </returns>
+103     [Authorize(Roles = "Admin")]
+104     [HttpPost("{userId}/remove-moderator")]
+105     public async Task<IActionResult> RemoveModerator(long userId)
+106     {
+107         await _mediator.Send(new RemoveModeratorCommand(userId));
+108         return Ok("Moderator role removed");
+109     }
+110 
+111     /// <summary>
+112     /// Retrieves a list of all users currently holding the 'Moderator' role.
+113     /// </summary>
+114     /// <remarks>
+115     /// Access restricted to users with the 'Admin' role.
+116     /// </remarks>
+117     /// <returns>
+118     /// A 200 OK response containing a list of moderators.
+119     /// </returns>
+120     [Authorize(Roles = "Admin")]
+121     [HttpGet("moderators")]
+122     public async Task<IActionResult> GetModerators()
+123     {
+124         var list = await _mediator.Send(new GetModeratorsQuery());
+125         return Ok(list);
+126     }
+127 
+128     /// <summary>
+129     /// Retrieves current system-wide configuration settings.
+130     /// </summary>
+131     /// <remarks>
+132     /// Access restricted to users with the 'Admin' role.
+133     /// </remarks>
+134     /// <returns>
+135     /// A 200 OK response containing the system settings.
+136     /// </returns>
+137     [Authorize(Roles = "Admin")]
+138     [HttpGet("system-settings")]
+139     public async Task<IActionResult> GetSystemSettings()
+140     {
+141         var result = await _mediator.Send(new GetSystemSettingsQuery());
+142         return Ok(result);
+143     }
+144 
+145     /// <summary>
+146     /// Updates system-wide configuration settings.
+147     /// </summary>
+148     /// <remarks>
+149     /// Access restricted to users with the 'Admin' role. Allows modification of limits like maximum aquariums, devices, and rules per device.
+150     /// </remarks>
+151     /// <param name="request">The request body containing new values for system settings.</param>
+152     /// <returns>
+153     /// A 200 OK response confirming successful update.
+154     /// </returns>
+155     [Authorize(Roles = "Admin")]
+156     [HttpPut("update-system-settings")]
+157     public async Task<IActionResult> UpdateSystemSettings([FromBody] UpdateSystemSettingsRequest request)
+158     {
+159         var cmd = new UpdateSystemSettingsCommand(
+160             MaxAquariumsPerUser: request.MaxAquariumsPerUser,
+161             MaxDevicesPerAquarium: request.MaxDevicesPerAquarium,
+162             MaxAlarmRulesPerDevice: request.MaxAlarmRulesPerDevice,
+163             MaxScheduledCommandsPerDevice: request.MaxScheduledCommandsPerDevice
+164         );
+165 
+166         await _mediator.Send(cmd);
+167         return Ok("System settings updated");
+168     }
+169 
+170     /// <summary>
+171     /// Retrieves daily activity statistics for the specified number of past days.
+172     /// </summary>
+173     /// <remarks>
+174     /// Access restricted to users with 'Admin' or 'Moderator' roles.
+175     /// Defaults to returning statistics for the last 7 days.
+176     /// </remarks>
+177     /// <param name="days">The number of past days to include in the activity statistics.</param>
+178     /// <returns>
+179     /// A 200 OK response with the daily activity statistics data.
+180     /// </returns>
+181     [Authorize(Roles = "Admin,Moderator")]
+182     [HttpGet("daily-activity/{days:int}")]
+183     public async Task<IActionResult> GetDailyActivity(int days = 7)
+184     {
+185         return Ok(await _activityService.GetDailyStatsAsync(days));
+186     }
+187 
+188     /// <summary>
+189     /// Analyzes the correlation between executed commands and triggered alarms within a specified time range.
+190     /// </summary>
+191     /// <remarks>
+192     /// Access restricted to users with 'Admin' or 'Moderator' roles. Used for system analytics.
+193     /// </remarks>
+194     /// <param name="from">The start date and time for the analysis period (query parameter).</param>
+195     /// <param name="to">The end date and time for the analysis period (query parameter).</param>
+196     /// <returns>
+197     /// A 200 OK response containing the correlation analysis results.
+198     /// </returns>
+199     [Authorize(Roles = "Admin,Moderator")]
+200     [HttpGet("command-alarm-correlation")]
+201     public async Task<IActionResult> GetCorrelation([FromQuery] DateTime from, [FromQuery] DateTime to)
+202     {
+203         var data = await _analyticsService.AnalyzeAsync(from, to,TimeSpan.FromMinutes(10));
+204 
+205         return Ok(data);
+206     }
+207 }
+
+
+
+

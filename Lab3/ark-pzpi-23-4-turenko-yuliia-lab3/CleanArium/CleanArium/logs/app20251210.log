@@ -1,0 +1,52 @@
+2025-12-10 09:26:57.887 +02:00 [INF] Application starting
+2025-12-10 09:27:05.818 +02:00 [INF] Checking if admin user exists...
+2025-12-10 09:27:06.867 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-10 09:27:07.498 +02:00 [INF] Refresh token cleanup service started.
+2025-12-10 09:28:00.725 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-10 09:28:01.584 +02:00 [INF] Successful login for user: 5 
+2025-12-10 09:28:21.019 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 09:28:33.937 +02:00 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2025-12-10 09:28:34.221 +02:00 [INF] USER_ACTION Aquarium created: 5 by User 5
+2025-12-10 09:28:37.044 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 09:28:48.709 +02:00 [INF] USER_ACTION Device 7 created in Aquarium 5
+2025-12-10 09:29:01.533 +02:00 [INF] USER_ACTION Exporting aquariums for User 5
+2025-12-10 09:31:36.874 +02:00 [INF] Successful login for user: 1 
+2025-12-10 09:50:39.821 +02:00 [INF] Application starting
+2025-12-10 09:50:46.402 +02:00 [INF] Checking if admin user exists...
+2025-12-10 09:50:47.456 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-10 09:50:48.037 +02:00 [INF] Refresh token cleanup service started.
+2025-12-10 09:51:24.000 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-10 09:51:25.057 +02:00 [INF] Successful login for user: 1 
+2025-12-10 09:54:07.412 +02:00 [INF] Application starting
+2025-12-10 09:54:12.252 +02:00 [INF] Checking if admin user exists...
+2025-12-10 09:54:13.247 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-10 09:54:13.986 +02:00 [INF] Refresh token cleanup service started.
+2025-12-10 10:11:56.463 +02:00 [INF] Application starting
+2025-12-10 10:12:01.826 +02:00 [INF] Checking if admin user exists...
+2025-12-10 10:12:02.716 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-10 10:12:03.386 +02:00 [INF] Refresh token cleanup service started.
+2025-12-10 10:14:10.512 +02:00 [INF] Application starting
+2025-12-10 10:14:12.844 +02:00 [INF] Checking if admin user exists...
+2025-12-10 10:14:13.385 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-10 10:14:13.612 +02:00 [INF] Refresh token cleanup service started.
+2025-12-10 10:15:18.056 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-10 10:15:20.966 +02:00 [INF] Successful login for user: 5 
+2025-12-10 10:15:55.417 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:16:37.161 +02:00 [WRN] USER_ACTION Aquarium 5 deleted
+2025-12-10 10:16:44.934 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:25:08.216 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:25:20.367 +02:00 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2025-12-10 10:25:20.705 +02:00 [INF] USER_ACTION Imported 8 aquariums with 24 devices for user 5
+2025-12-10 10:25:41.295 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:25:57.447 +02:00 [INF] USER_ACTION Exporting aquariums for User 5
+2025-12-10 10:27:09.596 +02:00 [INF] Successful login for user: 1 
+2025-12-10 10:31:37.812 +02:00 [INF] Successful login for user: 5 
+2025-12-10 10:32:39.910 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:32:48.625 +02:00 [WRN] USER_ACTION Aquarium 6 deleted
+2025-12-10 10:32:53.379 +02:00 [WRN] USER_ACTION Aquarium 7 deleted
+2025-12-10 10:32:56.895 +02:00 [WRN] USER_ACTION Aquarium 8 deleted
+2025-12-10 10:39:22.012 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:40:15.327 +02:00 [INF] USER_ACTION Imported 8 aquariums with 16 devices for user 5
+2025-12-10 10:40:33.611 +02:00 [INF] USER_ACTION Successfully retrieved aquariums for user: 5 
+2025-12-10 10:40:40.057 +02:00 [INF] USER_ACTION Exporting aquariums for User 5
+2025-12-10 10:41:19.191 +02:00 [INF] Successful login for user: 1 
