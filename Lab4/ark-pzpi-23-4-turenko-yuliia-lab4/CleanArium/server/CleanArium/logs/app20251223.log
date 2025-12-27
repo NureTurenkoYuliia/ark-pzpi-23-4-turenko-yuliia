@@ -1,0 +1,64 @@
+2025-12-23 00:44:59.757 +02:00 [INF] Successful login for user: 2 
+2025-12-23 09:43:50.263 +02:00 [INF] Application starting
+2025-12-23 09:43:55.422 +02:00 [INF] Checking if admin user exists...
+2025-12-23 09:43:56.738 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 09:43:57.220 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 09:44:23.697 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-23 09:44:24.574 +02:00 [INF] Successful login for user: 2 
+2025-12-23 12:39:27.773 +02:00 [INF] Application starting
+2025-12-23 12:39:33.447 +02:00 [INF] Checking if admin user exists...
+2025-12-23 12:39:34.612 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 12:39:35.103 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 12:40:30.506 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-23 12:40:31.504 +02:00 [INF] Successful login for user: 2 
+2025-12-23 15:36:55.705 +02:00 [INF] Application starting
+2025-12-23 15:36:59.305 +02:00 [INF] Checking if admin user exists...
+2025-12-23 15:37:00.176 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 15:37:00.586 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 15:59:33.061 +02:00 [INF] Application starting
+2025-12-23 15:59:38.980 +02:00 [INF] Checking if admin user exists...
+2025-12-23 15:59:39.772 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 15:59:40.141 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 16:06:50.767 +02:00 [INF] Application starting
+2025-12-23 16:06:55.124 +02:00 [INF] Checking if admin user exists...
+2025-12-23 16:06:55.918 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 16:06:56.232 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 16:09:55.169 +02:00 [INF] Application starting
+2025-12-23 16:09:58.908 +02:00 [INF] Checking if admin user exists...
+2025-12-23 16:10:00.399 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 16:10:00.927 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 16:11:50.447 +02:00 [INF] Application starting
+2025-12-23 16:11:53.777 +02:00 [INF] Checking if admin user exists...
+2025-12-23 16:11:54.722 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 16:11:55.112 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 16:13:06.764 +02:00 [INF] Application starting
+2025-12-23 16:13:10.630 +02:00 [INF] Checking if admin user exists...
+2025-12-23 16:13:11.784 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 16:13:12.153 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 18:23:57.417 +02:00 [INF] Application starting
+2025-12-23 18:24:03.683 +02:00 [INF] Checking if admin user exists...
+2025-12-23 18:24:04.562 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 18:24:05.050 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 18:36:49.518 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-23 18:36:51.669 +02:00 [INF] Successful login for user: 2 
+2025-12-23 18:47:11.232 +02:00 [INF] Successful login for user: 2 
+2025-12-23 19:20:54.340 +02:00 [INF] Application starting
+2025-12-23 19:20:58.923 +02:00 [INF] Checking if admin user exists...
+2025-12-23 19:20:59.851 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 19:21:00.376 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 19:22:20.996 +02:00 [WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2025-12-23 19:22:21.947 +02:00 [INF] Successful login for user: 2 
+2025-12-23 19:25:44.911 +02:00 [INF] Application starting
+2025-12-23 19:25:49.780 +02:00 [INF] Checking if admin user exists...
+2025-12-23 19:25:50.491 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 19:25:50.832 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 19:25:53.419 +02:00 [WRN] Failed to determine the https port for redirect.
+2025-12-23 20:17:11.733 +02:00 [INF] Application starting
+2025-12-23 20:17:19.012 +02:00 [INF] Checking if admin user exists...
+2025-12-23 20:17:21.119 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 20:17:21.618 +02:00 [INF] Refresh token cleanup service started.
+2025-12-23 20:17:25.413 +02:00 [WRN] Failed to determine the https port for redirect.
+2025-12-23 20:19:18.888 +02:00 [INF] Application starting
+2025-12-23 20:19:23.803 +02:00 [INF] Checking if admin user exists...
+2025-12-23 20:19:25.150 +02:00 [INF] Admin already exists. Skipping seeding.
+2025-12-23 20:19:25.593 +02:00 [INF] Refresh token cleanup service started.
