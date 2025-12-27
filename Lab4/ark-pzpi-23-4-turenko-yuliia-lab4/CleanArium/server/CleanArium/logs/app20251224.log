@@ -1,4 +1,0 @@
-2025-12-24 11:18:45.454 +02:00 [INF] Application starting
-2025-12-24 11:18:50.541 +02:00 [INF] Checking if admin user exists...
-2025-12-24 11:18:51.371 +02:00 [INF] Admin already exists. Skipping seeding.
-2025-12-24 11:18:51.697 +02:00 [INF] Refresh token cleanup service started.
